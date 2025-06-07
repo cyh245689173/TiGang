@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @author <a href="https://github.com/liyupi">程序员鱼皮</a> -->
+<!-- @from <a href="https://yupi.icu">编程导航知识星球</a> -->
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.copico.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.copico.model.domain.User">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="username" column="username"/>
+        <result property="userAccount" column="userAccount"/>
+        <result property="avatarUrl" column="avatarUrl"/>
+        <result property="gender" column="gender" jdbcType="TINYINT"/>
+        <result property="userPassword" column="userPassword"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="userStatus" column="userStatus"/>
+        <result property="userRole" column="userRole"/>
+        <result property="deleteFlag" column="delete_flag"/>
+        <result property="createUser" column="create user"/>
+        <result property="updateUser" column="update_user"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+
+
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id
+        ,username,userAccount,
+        avatarUrl,gender,userPassword,
+        phone,email,userStatus,userRole
+        deleteFlag,createUser,updateUser,updateTime,
+    </sql>
+</mapper>
