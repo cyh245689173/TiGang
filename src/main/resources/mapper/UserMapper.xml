@@ -8,17 +8,17 @@
 
     <resultMap id="BaseResultMap" type="com.copico.model.domain.User">
         <id property="id" column="id" jdbcType="BIGINT"/>
-        <result property="username" column="username"/>
-        <result property="userAccount" column="userAccount"/>
-        <result property="avatarUrl" column="avatarUrl"/>
-        <result property="gender" column="gender" jdbcType="TINYINT"/>
-        <result property="userPassword" column="userPassword"/>
+        <result property="username" column="user_name"/>
+        <result property="userAccount" column="user_account"/>
+        <result property="avatarUrl" column="avatar_url"/>
+        <result property="gender" column="gender"/>
+        <result property="userPassword" column="user_password"/>
         <result property="phone" column="phone"/>
         <result property="email" column="email"/>
-        <result property="userStatus" column="userStatus"/>
-        <result property="userRole" column="userRole"/>
+        <result property="userStatus" column="user_status"/>
+        <result property="userRole" column="user_role"/>
         <result property="deleteFlag" column="delete_flag"/>
-        <result property="createUser" column="create user"/>
+        <result property="createUser" column="create_user"/>
         <result property="updateUser" column="update_user"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
@@ -28,9 +28,9 @@
 
     <sql id="Base_Column_List">
         id
-        ,username,userAccount,
-        avatarUrl,gender,userPassword,
-        phone,email,userStatus,userRole
-        deleteFlag,createUser,updateUser,updateTime,
+        ,user_name,user_account,
+        avatar_url,gender,user_password,
+        phone,email,user_status,user_role
+        delete_flag,create_user,update_user,create_time,update_time
     </sql>
 </mapper>

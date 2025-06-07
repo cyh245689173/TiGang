@@ -8,7 +8,7 @@ import com.copico.model.domain.User;
  * 用户 Mapper 接口
  * </p>
  *
- * @author yuhao.chen
+ * @author Bia布
  * @since 2025-06-07
  */
 public interface UserMapper extends BaseMapper<User> {

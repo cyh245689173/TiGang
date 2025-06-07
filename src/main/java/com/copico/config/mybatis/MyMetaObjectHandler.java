@@ -2,6 +2,7 @@ package com.copico.config.mybatis;
 
 
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
+import com.copico.common.base.Constant;
 import org.apache.ibatis.reflection.MetaObject;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +30,7 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
     public void insertFill(MetaObject metaObject) {
         this.strictInsertFill(metaObject, "createTime", Date.class, new Date());
         this.strictInsertFill(metaObject, "updateTime", Date.class, new Date());
-        this.strictInsertFill(metaObject, "deleteFlag", Date.class, new Date());
+        this.strictInsertFill(metaObject, "deleteFlag", Integer.class, Constant.DELETE_FLAG_NO);
     }
 
     @Override

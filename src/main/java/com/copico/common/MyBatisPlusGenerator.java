@@ -13,7 +13,7 @@ public class MyBatisPlusGenerator {
     public static void main(String[] args) {
         FastAutoGenerator.create("jdbc:mysql://localhost:3306/demo?useUnicode=true&useSSL=false&characterEncoding=utf8&serverTimezone=Asia/Shanghai", "root", "123456")
                 .globalConfig(builder -> {
-                    builder.author("yuhao.chen") // 设置作者
+                    builder.author("Bia布") // 设置作者
                             .enableSwagger() // 开启 swagger 模式
                             .outputDir("D://WorkPlace//TiGang//"); // 指定输出目录
                 })

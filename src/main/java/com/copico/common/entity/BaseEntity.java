@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.activerecord.Model;
 import com.copico.common.base.Constant;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
@@ -12,6 +14,8 @@ import java.util.Date;
  * @date 2025/6/7 10:58
  * @description: 所有数据库实体的顶级实体类
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class BaseEntity<T extends Model<T>> extends Model<T> {
 
 
