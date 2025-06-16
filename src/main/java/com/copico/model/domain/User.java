@@ -2,6 +2,7 @@ package com.copico.model.domain;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.copico.common.entity.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -41,6 +42,7 @@ public class User extends BaseEntity<User> implements Serializable {
     @TableField("gender")
     private Byte gender;
 
+    @JsonIgnore //让SpringMVC把当前对象转换为json时忽略该字段
     @Schema(description = "密码")
     @TableField("user_password")
     private String userPassword;
@@ -53,9 +55,21 @@ public class User extends BaseEntity<User> implements Serializable {
     @TableField("email")
     private String email;
 
+    @Schema(description = "等级")
+    @TableField("rank")
+    private String rank;
+
+    @Schema(description = "经验值")
+    @TableField("exp")
+    private Long exp;
+
     @Schema(description = "状态 0 - 正常")
     @TableField("user_status")
     private Integer userStatus;
+
+    @Schema(description = "用户简介")
+    @TableField("user_profile")
+    private String userProfile;
 
     @Schema(description = "用户角色 0 - 普通用户 1 - 管理员")
     @TableField("user_role")

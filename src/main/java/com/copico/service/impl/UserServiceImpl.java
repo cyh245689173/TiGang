@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.copico.common.base.ErrorCode;
 import com.copico.common.exception.BizException;
+import com.copico.common.util.JwtUtil;
 import com.copico.mapper.UserMapper;
 import com.copico.model.domain.User;
 import com.copico.service.IUserService;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,10 +58,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BizException("参数为空");
         }
         if (userAccount.length() < 4) {
-            throw new BizException("用户账号过短");
+            throw new BizException("用户账号过短, 账号最低四个字符.");
         }
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
-            throw new BizException("用户密码过短");
+            throw new BizException("用户密码过短, 最低八个字符");
         }
 
         // 账户不能包含特殊字符
@@ -68,16 +70,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (matcher.find()) {
             throw new BizException("账户不能包含特殊字符");
         }
-        // 密码和校验密码相同
+        // 密码和校验密码不同
         if (!userPassword.equals(checkPassword)) {
-            throw new BizException("密码和校验密码相同");
+            throw new BizException("密码和校验密码不同");
         }
         // 账户不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
         long count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
-            throw new BizException("账号重复");
+            throw new BizException("用户已存在。");
         }
 
         // 2. 加密
@@ -98,26 +100,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      *
      * @param userAccount  用户账户
      * @param userPassword 用户密码
-     * @param request
-     * @return 脱敏后的用户信息
+     * @return JWT 令牌
      */
     @Override
-    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+    public String userLogin(String userAccount, String userPassword) {
         // 1. 校验
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
-        }
-        if (userAccount.length() < 4) {
-            return null;
-        }
-        if (userPassword.length() < 8) {
-            return null;
-        }
-        // 账户不能包含特殊字符
-        String validPattern = "[`~!@#$%^&*()+=|{}':;,\\\\.<>/?！￥…（）—【】‘；：”“’。，、？]";
-        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
-        if (matcher.find()) {
-            return null;
+            throw new BizException("参数不合法, 请检查后重试.");
         }
         // 2. 加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -130,37 +119,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (user == null) {
             throw new BizException("用户名不存在或密码错误, 请重新检查。");
         }
-        // 3. 用户脱敏
-        User safetyUser = getSafetyUser(user);
-        // 4. 记录用户的登录态
-        request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
-        return safetyUser;
+        // 3. 记录用户的登录态
+        HashMap<String, Object> claims = new HashMap<>();
+        claims.put("userAccount", userAccount);
+        claims.put("userName", user.getUserName());
+        return JwtUtil.genToken(claims);
     }
 
-    /**
-     * 用户脱敏
-     *
-     * @param originUser
-     * @return
-     */
-    @Override
-    public User getSafetyUser(User originUser) {
-        if (originUser == null) {
-            return null;
-        }
-        User safetyUser = new User();
-        safetyUser.setId(originUser.getId());
-        safetyUser.setUserName(originUser.getUserName());
-        safetyUser.setUserAccount(originUser.getUserAccount());
-        safetyUser.setAvatarUrl(originUser.getAvatarUrl());
-        safetyUser.setGender(originUser.getGender());
-        safetyUser.setPhone(originUser.getPhone());
-        safetyUser.setEmail(originUser.getEmail());
-        safetyUser.setUserRole(originUser.getUserRole());
-        safetyUser.setUserStatus(originUser.getUserStatus());
-        safetyUser.setCreateTime(originUser.getCreateTime());
-        return safetyUser;
-    }
 
     /**
      * 用户注销
@@ -172,6 +137,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 移除登录态
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return 1;
+    }
+
+    /**
+     * 获取加密后的密码
+     *
+     * @param userPassword 用户密码
+     * @return 加密后的密码
+     */
+    @Override
+    public String getEncryptPassword(String userPassword) {
+        return DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
     }
 
 }

@@ -20,7 +20,7 @@ public class BaseEntity<T extends Model<T>> extends Model<T> {
 
 
     @TableId(type = IdType.AUTO)
-    private long id;
+    private Long id;
 
     /*
      *只对自动注入的sql起效

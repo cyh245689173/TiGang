@@ -1,24 +1,27 @@
 package com.copico.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.copico.common.annotation.AuthCheck;
 import com.copico.common.base.ErrorCode;
 import com.copico.common.base.RestResult;
+import com.copico.common.base.UserConstant;
+import com.copico.common.entity.DeleteRequest;
 import com.copico.common.exception.BizException;
+import com.copico.common.util.ThreadLocalUtil;
 import com.copico.model.domain.User;
+import com.copico.model.dto.user.UserAddRequest;
+import com.copico.model.dto.user.UserUpdateRequest;
 import com.copico.model.request.UserLoginRequest;
 import com.copico.model.request.UserRegisterRequest;
 import com.copico.service.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.copico.common.base.UserConstant.ADMIN_ROLE;
-import static com.copico.common.base.UserConstant.USER_LOGIN_STATE;
+import java.util.Map;
 
 /**
  * <p>
@@ -32,8 +35,11 @@ import static com.copico.common.base.UserConstant.USER_LOGIN_STATE;
 @RequestMapping("/user")
 public class UserController {
 
-    @Autowired
-    private UserServiceImpl userService;
+    private final UserServiceImpl userService;
+
+    public UserController(UserServiceImpl userService) {
+        this.userService = userService;
+    }
 
     /**
      * 用户注册
@@ -52,7 +58,7 @@ public class UserController {
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            return null;
+            throw new BizException(ErrorCode.PARAMS_ERROR.getMessage());
         }
         long result = userService.userRegister(userAccount, userPassword, checkPassword);
         return RestResult.success(result);
@@ -62,12 +68,11 @@ public class UserController {
      * 用户登录
      *
      * @param userLoginRequest
-     * @param request
      * @return
      */
     @PostMapping("/login")
     @Operation(summary = "用户登录")
-    public RestResult<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public RestResult<String> userLogin(@RequestBody UserLoginRequest userLoginRequest) {
         if (userLoginRequest == null) {
             return RestResult.fail(ErrorCode.PARAMS_ERROR.getMessage());
         }
@@ -76,8 +81,8 @@ public class UserController {
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             return RestResult.fail(ErrorCode.PARAMS_ERROR.getMessage());
         }
-        User user = userService.userLogin(userAccount, userPassword, request);
-        return RestResult.success(user);
+        String token = userService.userLogin(userAccount, userPassword);
+        return RestResult.success(token);
     }
 
     /**
@@ -96,66 +101,65 @@ public class UserController {
         return RestResult.success(result);
     }
 
+
     /**
-     * 获取当前用户
-     *
-     * @param request
-     * @return
+     * 创建用户
      */
-    @GetMapping("/current")
-    @Operation(summary = "获取当前用户")
-    public RestResult<User> getCurrentUser(HttpServletRequest request) {
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        if (currentUser == null) {
-            throw new BizException(ErrorCode.NOT_LOGIN.getMessage());
-        }
-        long userId = currentUser.getId();
-        // TODO 校验用户是否合法
-        User user = userService.getById(userId);
-        User safetyUser = userService.getSafetyUser(user);
-        return RestResult.success(safetyUser);
+    @PostMapping("/add")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public RestResult<Boolean> addUser(@RequestBody UserAddRequest userAddRequest) {
+        User user = new User();
+        BeanUtil.copyProperties(userAddRequest, user);
+        // 默认密码
+        final String DEFAULT_PASSWORD = "12345678";
+        String encryptPassword = userService.getEncryptPassword(DEFAULT_PASSWORD);
+        user.setUserPassword(encryptPassword);
+        // 插入数据库
+        return RestResult.success(userService.save(user));
     }
 
-
-    @GetMapping("/search")
-    @Operation(summary = "查询用户")
-    public RestResult<List<User>> searchUsers(String username, HttpServletRequest request) {
-        if (!isAdmin(request)) {
-            throw new BizException(ErrorCode.NO_AUTH.getMessage());
-        }
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        if (StringUtils.isNotBlank(username)) {
-            queryWrapper.like("user_name", username);
-        }
-        List<User> userList = userService.list(queryWrapper);
-        List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
-        return RestResult.success(list);
+    /**
+     * 测试
+     */
+    @GetMapping("/getTest")
+    public RestResult<String> getUserById() {
+        Map<String, Object> map = ThreadLocalUtil.get();
+        String userAccount = (String) map.get("userAccount");
+        return RestResult.success("测试" + userAccount);
     }
 
+    /**
+     * 根据 id 获取用户（仅管理员）
+     */
+    @GetMapping("/get")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public RestResult<User> getUserById(long id) {
+        if (id < 1) {
+            throw new BizException("id有误, 请检查");
+        }
+        return RestResult.success(userService.getById(id));
+    }
+
+    /**
+     * 删除用户
+     */
     @PostMapping("/delete")
-    @Operation(summary = "删除用户")
-    public RestResult<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
-        if (!isAdmin(request)) {
-            throw new BizException(ErrorCode.NO_AUTH.getMessage());
-        }
-        if (id <= 0) {
-            throw new BizException(ErrorCode.PARAMS_ERROR.getMessage());
-        }
-        boolean b = userService.removeById(id);
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public RestResult<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest) {
+        boolean b = userService.removeById(deleteRequest.getId());
         return RestResult.success(b);
     }
 
     /**
-     * 是否为管理员
-     *
-     * @param request
-     * @return
+     * 更新用户
      */
-    private boolean isAdmin(HttpServletRequest request) {
-        // 仅管理员可查询
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User user = (User) userObj;
-        return user != null && user.getUserRole() == ADMIN_ROLE;
+    @PostMapping("/update")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public RestResult<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest) {
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateRequest, user);
+        userService.updateById(user);
+        return RestResult.success(userService.updateById(user));
     }
+
 }

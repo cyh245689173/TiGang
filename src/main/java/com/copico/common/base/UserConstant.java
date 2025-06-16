@@ -15,13 +15,13 @@ public interface UserConstant {
     //  ------- 权限 --------
 
     /**
-     * 默认权限
+     * 默认角色
      */
-    int DEFAULT_ROLE = 0;
+    String DEFAULT_ROLE = "user";
 
     /**
-     * 管理员权限
+     * 管理员角色
      */
-    int ADMIN_ROLE = 1;
+    String ADMIN_ROLE = "admin";
 
 }

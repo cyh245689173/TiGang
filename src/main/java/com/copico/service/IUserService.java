@@ -29,18 +29,9 @@ public interface IUserService extends IService<User> {
      *
      * @param userAccount  用户账户
      * @param userPassword 用户密码
-     * @param request
-     * @return 脱敏后的用户信息
+     * @return JWT令牌
      */
-    User userLogin(String userAccount, String userPassword, HttpServletRequest request);
-
-    /**
-     * 用户脱敏
-     *
-     * @param originUser
-     * @return
-     */
-    User getSafetyUser(User originUser);
+    String userLogin(String userAccount, String userPassword);
 
     /**
      * 用户注销
@@ -49,4 +40,13 @@ public interface IUserService extends IService<User> {
      * @return
      */
     int userLogout(HttpServletRequest request);
+
+    /**
+     * 获取加密后的密码
+     *
+     * @param userPassword
+     * @return
+     */
+    String getEncryptPassword(String userPassword);
+
 }

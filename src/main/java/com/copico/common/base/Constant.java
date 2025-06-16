@@ -20,7 +20,7 @@ public class Constant {
     /**
      * 启用标记 是
      */
-    public static final int YEs = 1;
+    public static final int YES = 1;
 
     /**
      * 启用标记 否
@@ -29,5 +29,7 @@ public class Constant {
 
     public static final String USERNAME_CONSTANT = "username";
     public static final String PASSWORD_CONSTANT = "password";
+
+    public static final String AUTHORIZATION_TOKEN_KEY = "Authorization";
 
 }
