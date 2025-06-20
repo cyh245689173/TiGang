@@ -3,6 +3,7 @@ package com.copico.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.copico.model.domain.TrainingRecord;
+import com.copico.model.vo.RankingItemVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -34,6 +35,37 @@ public interface ITrainingRecordMapper extends BaseMapper<TrainingRecord> {
     // 查询用户总训练次数
     @Select("SELECT COUNT(*) FROM training_record WHERE user_id = #{userId}")
     Integer countTotalTrainings(@Param("userId") Long userId);
+
+
+    // 总时长排行榜
+    @Select("SELECT u.id AS userId, u.user_name, u.avatar_url, " +
+            "SUM(r.duration) AS totalDuration " +
+            "FROM training_record r " +
+            "JOIN user u ON r.user_id = u.id " +
+            "GROUP BY r.user_id " +
+            "ORDER BY totalDuration DESC")
+    List<RankingItemVO> selectTotalRanking();
+
+    // 周排行榜
+    @Select("SELECT u.id AS userId, u.user_name, u.avatar_url, " +
+            "SUM(r.duration) AS totalDuration " +
+            "FROM training_record r " +
+            "JOIN user u ON r.user_id = u.id " +
+            "WHERE r.training_date BETWEEN #{start} AND #{end} " +
+            "GROUP BY r.user_id " +
+            "ORDER BY totalDuration DESC")
+    List<RankingItemVO> selectWeeklyRanking(@Param("start") LocalDate start,
+                                            @Param("end") LocalDate end);
+
+    // 日排行榜
+    @Select("SELECT u.id AS userId, u.user_name, u.avatar_url, " +
+            "SUM(r.duration) AS totalDuration " +
+            "FROM training_record r " +
+            "JOIN user u ON r.user_id = u.id " +
+            "WHERE r.training_date = #{date} " +
+            "GROUP BY r.user_id " +
+            "ORDER BY totalDuration DESC")
+    List<RankingItemVO> selectDailyRanking(@Param("date") LocalDate date);
 
 
 }
