@@ -4,6 +4,7 @@ package com.copico.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.copico.model.domain.TrainingRecord;
 import com.copico.model.request.TrainingRecordRequest;
+import com.copico.model.vo.TrainingStatsVO;
 
 /**
  * <p>
@@ -15,8 +16,9 @@ import com.copico.model.request.TrainingRecordRequest;
  */
 public interface ITrainingRecordService extends IService<TrainingRecord> {
 
-    TrainingRecord recordTraining(Long userId, TrainingRecordRequest request);
+    void recordTraining(Long userId, TrainingRecordRequest request);
 
-    Object getDailyRanking();
+
+    TrainingStatsVO getTrainingStatistics(Long userId);
 
 }

@@ -30,14 +30,17 @@ public class TrainingRecordController {
     public RestResult<TrainingRecord> recordTraining(
             @RequestBody TrainingRecordRequest request) {
         Map<String, Object> map = ThreadLocalUtil.get();
-        Long userId = (Long) map.get("userId");
-
-        TrainingRecord record = trainingService.recordTraining(userId, request);
-        return RestResult.success(record);
+        String userIdStr = (String) map.get("userIdStr");
+        Long userId = Long.parseLong(userIdStr);
+        trainingService.recordTraining(userId, request);
+        return RestResult.success();
     }
 
-    @GetMapping("/ranking")
-    public RestResult<?> getDailyRanking() {
-        return RestResult.success(trainingService.getDailyRanking());
+    @GetMapping("/stats")
+    public RestResult<?> getStats() {
+        Map<String, Object> map = ThreadLocalUtil.get();
+        String userIdStr = (String) map.get("userIdStr");
+        Long userId = Long.parseLong(userIdStr);
+        return RestResult.success(trainingService.getTrainingStatistics(userId));
     }
 }

@@ -1,18 +1,21 @@
 package com.copico.service.impl;
 
 
-import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.copico.mapper.ITrainingRecordMapper;
 import com.copico.mapper.UserDailySummaryMapper;
 import com.copico.model.domain.TrainingRecord;
-import com.copico.model.domain.UserDailySummary;
 import com.copico.model.request.TrainingRecordRequest;
+import com.copico.model.vo.TrainingStatsVO;
 import com.copico.service.ITrainingRecordService;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -31,15 +34,13 @@ public class TrainingRecordServiceImpl extends ServiceImpl<ITrainingRecordMapper
     UserDailySummaryMapper dailySummaryMapper;
 
     @Override
-    public TrainingRecord recordTraining(Long userId, TrainingRecordRequest request) {
+    public void recordTraining(Long userId, TrainingRecordRequest request) {
         TrainingRecord record = new TrainingRecord();
-        BeanUtil.copyProperties(request, record);
+        BeanUtils.copyProperties(request, record);
+        record.setUserId(userId);
+        record.setTrainingDate(LocalDate.now());
         // 保存训练记录
         this.baseMapper.insert(record);
-
-        // 更新每日排行榜
-        updateDailySummary(userId, record.getDuration(), calculateCalories(record.getDifficulty(), record.getDuration()));
-        return null;
     }
 
 
@@ -61,36 +62,48 @@ public class TrainingRecordServiceImpl extends ServiceImpl<ITrainingRecordMapper
         return level * BASE_CALORIE * duration;
     }
 
-    @Override
-    public Object getDailyRanking() {
-        return null;
+    // 获取训练统计信息
+    public TrainingStatsVO getTrainingStatistics(Long userId) {
+        LocalDate today = LocalDate.now();
+        TrainingStatsVO stats = new TrainingStatsVO();
+
+        // 1. 总训练次数
+        stats.setTotalTimes(this.baseMapper.countTotalTrainings(userId));
+
+        // 2. 今日训练次数
+        stats.setTodayTimes(this.baseMapper.countTodayTrainings(userId, today));
+
+        // 3. 连续训练天数
+        stats.setContinuousDays(calculateContinuousDays(userId, today));
+
+        return stats;
     }
 
     /**
-     * 更新每日训练总量
+     * 计算连续训练天数（核心逻辑）
      *
      * @param userId
-     * @param duration
-     * @param calories
+     * @param today
+     * @return
      */
-    private void updateDailySummary(Long userId, int duration, double calories) {
-        Date today = new Date();
-        UserDailySummary summary = dailySummaryMapper.selectByUserAndDate(userId, today);
-        //没有则新建
-        if (summary == null) {
-            summary = new UserDailySummary();
-            summary.setUserId(userId);
-            summary.setSummaryDate(today);
-            summary.setTotalDuration(duration);
-            summary.setTotalCalories(calories);
-            dailySummaryMapper.insert(summary);
-        } else {
-            //有则更新总时长和总卡路里
-            summary.setTotalDuration(summary.getTotalDuration() + duration);
-            summary.setTotalCalories(summary.getTotalCalories() + calories);
-            dailySummaryMapper.updateById(summary);
-        }
-    }
+    private int calculateContinuousDays(Long userId, LocalDate today) {
+        // 获取所有去重训练日期（按日期倒序）
+        List<LocalDate> dates = this.baseMapper.selectDistinctTrainingDates(userId);
+        if (dates.isEmpty()) return 0;
 
+        // 转换为Set提高查询效率
+        Set<LocalDate> dateSet = new HashSet<>(dates);
+
+        int continuousDays = 0;
+        LocalDate currentDay = today;
+
+        // 从今天开始向前检查连续日期
+        while (dateSet.contains(currentDay)) {
+            continuousDays++;
+            currentDay = currentDay.minusDays(1); // 向前推一天
+        }
+
+        return continuousDays;
+    }
 
 }

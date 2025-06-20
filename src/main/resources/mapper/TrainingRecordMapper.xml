@@ -8,17 +8,17 @@
         <result column="user_id" property="userId"/>
         <result column="difficulty" property="difficulty"/>
         <result column="duration" property="duration"/>
+        <result column="training_date" property="trainingDate"/>
         <result column="delete_flag" property="deleteFlag"/>
         <result column="create_user" property="createUser"/>
         <result column="create_time" property="createTime"/>
         <result column="update_user" property="updateUser"/>
         <result column="update_time" property="updateTime"/>
-        <result column="user_profile" property="userProfile"/>
     </resultMap>
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, user_id, difficulty, duration, delete_flag, create_user, create_time, update_user, update_time, user_profile
+        id, user_id, difficulty, duration,training_date, delete_flag, create_user, create_time, update_user, update_time
     </sql>
 
 </mapper>

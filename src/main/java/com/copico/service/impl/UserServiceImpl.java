@@ -52,9 +52,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @return 新用户 id
      */
     @Override
-    public long userRegister(String userAccount,String userName, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userName, String userPassword, String checkPassword) {
         // 1. 校验
-        if (StringUtils.isAnyBlank(userAccount,userName, userPassword, checkPassword)) {
+        if (StringUtils.isAnyBlank(userAccount, userName, userPassword, checkPassword)) {
             throw new BizException("参数为空");
         }
         if (userAccount.length() < 4) {
@@ -123,7 +123,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 3. 记录用户的登录态
         HashMap<String, Object> claims = new HashMap<>();
         claims.put("userAccount", userAccount);
-        claims.put("userId", user.getId());
+        //将 Long 类型字段以字符串形式传输, 避免json序列化导致Long类型退化为Integer
+        claims.put("userIdStr", user.getId().toString());
         claims.put("userName", user.getUserName());
         return JwtUtil.genToken(claims);
     }

@@ -9,6 +9,7 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.LocalDate;
 
 /**
  * <p>
@@ -30,6 +31,12 @@ public class TrainingRecord extends BaseEntity<TrainingRecord> implements Serial
     /**
      * 训练难度
      */
+    @TableField("user_id")
+    private Long userId;
+
+    /**
+     * 训练难度
+     */
     @TableField("difficulty")
     private Integer difficulty;
 
@@ -38,5 +45,11 @@ public class TrainingRecord extends BaseEntity<TrainingRecord> implements Serial
      */
     @TableField("duration")
     private Integer duration;
+
+    /**
+     * 训练日期
+     */
+    @TableField("training_date")
+    private LocalDate trainingDate;
 
 }
