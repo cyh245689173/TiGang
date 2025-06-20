@@ -56,11 +56,11 @@ public class User extends BaseEntity<User> implements Serializable {
     private String email;
 
     @Schema(description = "等级")
-    @TableField("rank")
-    private String rank;
+    @TableField("user_rank")
+    private String userRank;
 
     @Schema(description = "经验值")
-    @TableField("exp")
+    @TableField("user_exp")
     private Long exp;
 
     @Schema(description = "状态 0 - 正常")

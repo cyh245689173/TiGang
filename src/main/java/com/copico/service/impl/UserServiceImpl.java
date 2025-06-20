@@ -52,9 +52,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @return 新用户 id
      */
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount,String userName, String userPassword, String checkPassword) {
         // 1. 校验
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+        if (StringUtils.isAnyBlank(userAccount,userName, userPassword, checkPassword)) {
             throw new BizException("参数为空");
         }
         if (userAccount.length() < 4) {
@@ -65,7 +65,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
 
         // 账户不能包含特殊字符
-        String validPattern = "[`~!@#$%^&*()+=|{}':;,\\\\.<>/?！￥…（）—【】‘；：”“’。，、？]";
+        String validPattern = "[`~!@#$%^&*()+=|{}':;,\\\\<>/?！￥…（）—【】‘；：”“’。，、？]";
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if (matcher.find()) {
             throw new BizException("账户不能包含特殊字符");
@@ -87,6 +87,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 3. 插入数据
         User user = new User();
         user.setUserAccount(userAccount);
+        user.setUserName(userName);
         user.setUserPassword(encryptPassword);
         int saveResult = this.baseMapper.insert(user);
         if (saveResult == -1) {
@@ -122,6 +123,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 3. 记录用户的登录态
         HashMap<String, Object> claims = new HashMap<>();
         claims.put("userAccount", userAccount);
+        claims.put("userId", user.getId());
         claims.put("userName", user.getUserName());
         return JwtUtil.genToken(claims);
     }

@@ -9,7 +9,6 @@ import java.io.Serializable;
  * 用户注册请求体
  *
  * @author yuhao.chen
- * 
  */
 @Data
 public class UserRegisterRequest implements Serializable {
@@ -21,6 +20,11 @@ public class UserRegisterRequest implements Serializable {
      * 用户账号
      */
     private String userAccount;
+
+    /**
+     * 用户昵称
+     */
+    private String userName;
 
     /**
      * 用户密码

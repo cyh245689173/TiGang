@@ -17,6 +17,7 @@ import com.copico.model.request.UserRegisterRequest;
 import com.copico.service.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +33,7 @@ import java.util.Map;
  * @since 2025-06-07
  */
 @RestController
+@Slf4j
 @RequestMapping("/user")
 public class UserController {
 
@@ -55,12 +57,13 @@ public class UserController {
             throw new BizException(ErrorCode.PARAMS_ERROR.getMessage());
         }
         String userAccount = userRegisterRequest.getUserAccount();
+        String userName = userRegisterRequest.getUserName();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+        if (StringUtils.isAnyBlank(userAccount, userName, userPassword, checkPassword)) {
             throw new BizException(ErrorCode.PARAMS_ERROR.getMessage());
         }
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        long result = userService.userRegister(userAccount, userName, userPassword, checkPassword);
         return RestResult.success(result);
     }
 
@@ -82,7 +85,9 @@ public class UserController {
             return RestResult.fail(ErrorCode.PARAMS_ERROR.getMessage());
         }
         String token = userService.userLogin(userAccount, userPassword);
-        return RestResult.success(token);
+        RestResult<String> success = RestResult.success(token);
+        log.info("桀桀桀+{}",success.toString());
+        return success;
     }
 
     /**
