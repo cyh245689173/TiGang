@@ -38,28 +38,10 @@ public class TrainingRecordServiceImpl extends ServiceImpl<ITrainingRecordMapper
         TrainingRecord record = new TrainingRecord();
         BeanUtils.copyProperties(request, record);
         record.setUserId(userId);
+        record.setCalorie(BASE_CALORIE * record.getDuration());
         record.setTrainingDate(LocalDate.now());
         // 保存训练记录
         this.baseMapper.insert(record);
-    }
-
-
-    /**
-     * 卡路里计算
-     *
-     * @param difficulty
-     * @param duration
-     * @return
-     */
-    public double calculateCalories(Integer difficulty, int duration) {
-        //TODO:后续采用比较科学一点的计算方法，根据 难度 持续时间 共同决定消耗的卡路里
-        double level = switch (difficulty) {
-            case 0 -> 1;
-            case 1 -> 1.5;
-            case 2 -> 2;
-            default -> 0;
-        };
-        return level * BASE_CALORIE * duration;
     }
 
     // 获取训练统计信息

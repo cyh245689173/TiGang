@@ -8,6 +8,7 @@
         <result column="user_id" property="userId"/>
         <result column="difficulty" property="difficulty"/>
         <result column="duration" property="duration"/>
+        <result column="calorie" property="calorie"/>
         <result column="training_date" property="trainingDate"/>
         <result column="delete_flag" property="deleteFlag"/>
         <result column="create_user" property="createUser"/>
@@ -18,7 +19,7 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
-        id, user_id, difficulty, duration,training_date, delete_flag, create_user, create_time, update_user, update_time
+        id, user_id, difficulty, duration, calorie, training_date, delete_flag, create_user, create_time, update_user, update_time
     </sql>
 
 </mapper>

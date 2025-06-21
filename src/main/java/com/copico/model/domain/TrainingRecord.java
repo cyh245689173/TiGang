@@ -47,6 +47,13 @@ public class TrainingRecord extends BaseEntity<TrainingRecord> implements Serial
     private Integer duration;
 
     /**
+     * 训练卡路里, 单位: kcal
+     */
+    @TableField("calorie")
+    private Integer calorie;
+
+
+    /**
      * 训练日期
      */
     @TableField("training_date")

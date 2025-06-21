@@ -39,7 +39,8 @@ public interface ITrainingRecordMapper extends BaseMapper<TrainingRecord> {
 
     // 总时长排行榜
     @Select("SELECT u.id AS userId, u.user_name, u.avatar_url, " +
-            "SUM(r.duration) AS totalDuration " +
+            "SUM(r.duration) AS totalDuration, " +
+            "SUM(r.calorie) AS totalCalorie " +
             "FROM training_record r " +
             "JOIN user u ON r.user_id = u.id " +
             "GROUP BY r.user_id " +
@@ -48,7 +49,8 @@ public interface ITrainingRecordMapper extends BaseMapper<TrainingRecord> {
 
     // 周排行榜
     @Select("SELECT u.id AS userId, u.user_name, u.avatar_url, " +
-            "SUM(r.duration) AS totalDuration " +
+            "SUM(r.duration) AS totalDuration, " +
+            "SUM(r.calorie) AS totalCalorie " +
             "FROM training_record r " +
             "JOIN user u ON r.user_id = u.id " +
             "WHERE r.training_date BETWEEN #{start} AND #{end} " +
@@ -59,7 +61,8 @@ public interface ITrainingRecordMapper extends BaseMapper<TrainingRecord> {
 
     // 日排行榜
     @Select("SELECT u.id AS userId, u.user_name, u.avatar_url, " +
-            "SUM(r.duration) AS totalDuration " +
+            "SUM(r.duration) AS totalDuration, " +
+            "SUM(r.calorie) AS totalCalorie " +
             "FROM training_record r " +
             "JOIN user u ON r.user_id = u.id " +
             "WHERE r.training_date = #{date} " +

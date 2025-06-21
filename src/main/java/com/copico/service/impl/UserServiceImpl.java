@@ -60,8 +60,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (userAccount.length() < 4) {
             throw new BizException("用户账号过短, 账号最低四个字符.");
         }
-        if (userPassword.length() < 8 || checkPassword.length() < 8) {
-            throw new BizException("用户密码过短, 最低八个字符");
+        if (userPassword.length() < 6 || checkPassword.length() < 6) {
+            throw new BizException("用户密码过短, 最低六个字符");
         }
 
         // 账户不能包含特殊字符

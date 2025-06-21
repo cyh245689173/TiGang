@@ -86,7 +86,6 @@ public class UserController {
         }
         String token = userService.userLogin(userAccount, userPassword);
         RestResult<String> success = RestResult.success(token);
-        log.info("桀桀桀+{}",success.toString());
         return success;
     }
 
