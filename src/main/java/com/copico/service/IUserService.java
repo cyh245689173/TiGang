@@ -3,7 +3,9 @@ package com.copico.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.copico.model.domain.User;
+import com.copico.model.request.UserUpdateInfoRequest;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
@@ -48,5 +50,19 @@ public interface IUserService extends IService<User> {
      * @return
      */
     String getEncryptPassword(String userPassword);
+
+    boolean resetPassword(Long userId, String oldPassword, String newPassword);
+
+    void uploadAvatar(MultipartFile file);
+
+
+    /**
+     * 修改用户信息
+     *
+     * @param userId                  用户 ID
+     * @param userUpdateInfoRequest   包含要修改信息的请求对象
+     * @return 修改是否成功
+     */
+    boolean updateUserInfo(Long userId, UserUpdateInfoRequest userUpdateInfoRequest);
 
 }

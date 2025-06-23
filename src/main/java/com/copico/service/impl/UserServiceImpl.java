@@ -6,17 +6,26 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.copico.common.base.ErrorCode;
 import com.copico.common.exception.BizException;
 import com.copico.common.util.JwtUtil;
+import com.copico.common.util.ThreadLocalUtil;
 import com.copico.mapper.UserMapper;
 import com.copico.model.domain.User;
+import com.copico.model.enums.UserRankEnum;
+import com.copico.model.request.UserUpdateInfoRequest;
 import com.copico.service.IUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +47,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private UserMapper userMapper;
 
 
+    @Value("${file.upload-dir}")
+    private String uploadDir;
     /**
      * 盐值，混淆密码
      */
@@ -89,6 +100,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setUserAccount(userAccount);
         user.setUserName(userName);
         user.setUserPassword(encryptPassword);
+        // 初始化经验值为 0
+        user.setExp(0L);
+        // 初始化等级为最低等级
+        user.setUserLevel(UserRankEnum.values()[0].getDesc());
+
         int saveResult = this.baseMapper.insert(user);
         if (saveResult == -1) {
             throw new BizException(ErrorCode.SYSTEM_ERROR.getMessage());
@@ -140,6 +156,98 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 移除登录态
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return 1;
+    }
+
+    /**
+     * 用户重置密码
+     *
+     * @param userId      用户 ID
+     * @param oldPassword 旧密码
+     * @param newPassword 新密码
+     * @return 重置是否成功
+     */
+    @Override
+    public boolean resetPassword(Long userId, String oldPassword, String newPassword) {
+        if (userId == null || StringUtils.isAnyBlank(oldPassword, newPassword)) {
+            throw new BizException(ErrorCode.PARAMS_ERROR.getMessage());
+        }
+        // 获取用户信息
+        User user = this.getById(userId);
+        if (user == null) {
+            throw new BizException("未获取到获取用户信息");
+        }
+        // 校验旧密码
+        String encryptOldPassword = getEncryptPassword(oldPassword);
+        if (!encryptOldPassword.equals(user.getUserPassword())) {
+            throw new BizException(ErrorCode.PARAMS_ERROR.getMessage(), "旧密码错误");
+        }
+        // 加密新密码
+        String encryptNewPassword = getEncryptPassword(newPassword);
+        user.setUserPassword(encryptNewPassword);
+        // 更新用户信息
+        return this.updateById(user);
+    }
+
+    @Override
+    public void uploadAvatar(MultipartFile file) {
+
+        // 生成唯一文件名
+        String originalFilename = file.getOriginalFilename();
+        // 增加空值检查，避免 NPE
+        if (originalFilename == null) {
+            throw new BizException("文件名称为空");
+        }
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String uniqueFileName = UUID.randomUUID() + fileExtension;
+
+        // 保存文件到服务器
+        File uploadPath = new File(uploadDir);
+        if (!uploadPath.exists()) {
+            // 检查目录创建结果
+            boolean mkdirsSuccess = uploadPath.mkdirs();
+            if (!mkdirsSuccess) {
+                throw new BizException("创建上传目录失败");
+            }
+        }
+
+        File dest = new File(uploadPath.getAbsolutePath(), uniqueFileName);
+        try {
+            file.transferTo(dest);
+            // 获取当前用户信息
+            Map<String, Object> map = ThreadLocalUtil.get();
+            Long userId = Long.parseLong((String) map.get("userIdStr"));
+            User user = this.getById(userId);
+            // 将头像 url 设置为服务器上存储的绝对路径
+            user.setAvatarUrl(dest.getAbsolutePath());
+            this.updateById(user);
+        } catch (IOException e) {
+            log.error("文件上传失败", e);
+            throw new BizException("上传失败");
+        }
+    }
+
+    @Override
+    public boolean updateUserInfo(Long userId, UserUpdateInfoRequest userUpdateInfoRequest) {
+        User user = this.getById(userId);
+        if (user == null) {
+            throw new BizException("用户不存在");
+        }
+        if (userUpdateInfoRequest.getUserName() != null) {
+            user.setUserName(userUpdateInfoRequest.getUserName());
+        }
+        if (userUpdateInfoRequest.getGender() != null) {
+            user.setGender(userUpdateInfoRequest.getGender());
+        }
+        if (userUpdateInfoRequest.getPhone() != null) {
+            user.setPhone(userUpdateInfoRequest.getPhone());
+        }
+        if (userUpdateInfoRequest.getEmail() != null) {
+            user.setEmail(userUpdateInfoRequest.getEmail());
+        }
+        if (userUpdateInfoRequest.getUserProfile() != null) {
+            user.setUserProfile(userUpdateInfoRequest.getUserProfile());
+        }
+        return this.updateById(user);
     }
 
     /**

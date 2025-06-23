@@ -57,7 +57,7 @@ public class User extends BaseEntity<User> implements Serializable {
 
     @Schema(description = "等级")
     @TableField("user_rank")
-    private String userRank;
+    private String userLevel;
 
     @Schema(description = "经验值")
     @TableField("user_exp")

@@ -14,15 +14,22 @@ import com.copico.model.dto.user.UserAddRequest;
 import com.copico.model.dto.user.UserUpdateRequest;
 import com.copico.model.request.UserLoginRequest;
 import com.copico.model.request.UserRegisterRequest;
+import com.copico.model.request.UserResetPasswordRequest;
+import com.copico.model.request.UserUpdateInfoRequest;
 import com.copico.service.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * <p>
@@ -85,8 +92,7 @@ public class UserController {
             return RestResult.fail(ErrorCode.PARAMS_ERROR.getMessage());
         }
         String token = userService.userLogin(userAccount, userPassword);
-        RestResult<String> success = RestResult.success(token);
-        return success;
+        return RestResult.success(token);
     }
 
     /**
@@ -105,6 +111,89 @@ public class UserController {
         return RestResult.success(result);
     }
 
+    /**
+     * 用户重置密码
+     *
+     * @param userResetPasswordRequest 包含旧密码和新密码的请求对象
+     * @return 操作结果
+     */
+    @PostMapping("/resetPassword")
+    @Operation(summary = "用户重置密码")
+    public RestResult<Boolean> resetPassword(@RequestBody UserResetPasswordRequest userResetPasswordRequest) {
+        // 校验
+        if (userResetPasswordRequest == null) {
+            throw new BizException(ErrorCode.PARAMS_ERROR.getMessage());
+        }
+        String oldPassword = userResetPasswordRequest.getOldPassword();
+        String newPassword = userResetPasswordRequest.getNewPassword();
+        if (StringUtils.isAnyBlank(oldPassword, newPassword)) {
+            throw new BizException(ErrorCode.PARAMS_ERROR.getMessage());
+        }
+        // 获取当前登录用户 ID
+        Map<String, Object> map = ThreadLocalUtil.get();
+        Long userId = (Long) map.get("userId");
+        if (userId == null) {
+            throw new BizException(ErrorCode.NOT_LOGIN.getMessage());
+        }
+        boolean result = userService.resetPassword(userId, oldPassword, newPassword);
+        return RestResult.success(result);
+    }
+
+
+    /**
+     * 获取用户个人信息
+     *
+     * @return 用户个人信息
+     */
+    @GetMapping("/profile")
+    public RestResult<User> getUserInfo() {
+        Map<String, Object> map = ThreadLocalUtil.get();
+        Long userId = Long.parseLong((String) map.get("userIdStr"));
+        User user = userService.getById(userId);
+        if (user != null) {
+            return RestResult.success(user);
+        }
+        return RestResult.fail("未找到用户信息");
+    }
+
+
+    /**
+     * 上传用户头像
+     *
+     * @param avatar 上传的图片文件
+     * @return 操作结果
+     */
+    @PostMapping("/changeAvatar")
+    public RestResult<String> uploadAvatar(@RequestParam("avatar") MultipartFile avatar) {
+        if (avatar.isEmpty()) {
+            return RestResult.fail("文件为空");
+        }
+        userService.uploadAvatar(avatar);
+        return RestResult.success("上传成功");
+
+    }
+
+    /**
+     * 修改用户信息
+     *
+     * @param userUpdateInfoRequest 包含要修改信息的请求对象
+     * @return 操作结果
+     */
+    @PostMapping("/updateInfo")
+    @Operation(summary = "修改用户信息")
+    public RestResult<Boolean> updateUserInfo(@RequestBody UserUpdateInfoRequest userUpdateInfoRequest) {
+        if (userUpdateInfoRequest == null) {
+            throw new BizException(ErrorCode.PARAMS_ERROR.getMessage());
+        }
+        // 获取当前登录用户 ID
+        Map<String, Object> map = ThreadLocalUtil.get();
+        Long userId = Long.parseLong((String) map.get("userIdStr"));
+        if (userId == null) {
+            throw new BizException(ErrorCode.NOT_LOGIN.getMessage());
+        }
+        boolean result = userService.updateUserInfo(userId, userUpdateInfoRequest);
+        return RestResult.success(result);
+    }
 
     /**
      * 创建用户

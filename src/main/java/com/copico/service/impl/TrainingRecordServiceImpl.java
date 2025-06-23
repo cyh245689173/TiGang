@@ -3,8 +3,9 @@ package com.copico.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.copico.mapper.ITrainingRecordMapper;
-import com.copico.mapper.UserDailySummaryMapper;
 import com.copico.model.domain.TrainingRecord;
+import com.copico.model.domain.User;
+import com.copico.model.enums.UserRankEnum;
 import com.copico.model.request.TrainingRecordRequest;
 import com.copico.model.vo.TrainingStatsVO;
 import com.copico.service.ITrainingRecordService;
@@ -29,9 +30,10 @@ import java.util.Set;
 public class TrainingRecordServiceImpl extends ServiceImpl<ITrainingRecordMapper, TrainingRecord> implements ITrainingRecordService {
 
     private static final int BASE_CALORIE = 5; // 基础卡路里消耗（每分钟）
+    private static final int EXP_PER_MINUTE = 100; // 每分钟训练获得的经验值
 
     @Autowired
-    UserDailySummaryMapper dailySummaryMapper;
+    private UserServiceImpl userService;
 
     @Override
     public void recordTraining(Long userId, TrainingRecordRequest request) {
@@ -42,6 +44,23 @@ public class TrainingRecordServiceImpl extends ServiceImpl<ITrainingRecordMapper
         record.setTrainingDate(LocalDate.now());
         // 保存训练记录
         this.baseMapper.insert(record);
+
+        // 增加用户经验值
+        User user = userService.getById(userId);
+        if (user != null) {
+            // 如果没有经验值，默认设为 0
+            long currentExp = user.getExp() == null ? 0 : user.getExp();
+            long newExp = currentExp + (long) request.getDuration() * EXP_PER_MINUTE;
+            user.setExp(newExp);
+
+            // 如果没有等级，默认给最低等级
+            UserRankEnum newRank = user.getUserLevel() == null ?
+                    UserRankEnum.values()[0] : UserRankEnum.getRankByExp((int) newExp);
+            user.setUserLevel(newRank.getDesc());
+
+            // 更新用户信息
+            userService.updateById(user);
+        }
     }
 
     // 获取训练统计信息
