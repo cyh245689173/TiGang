@@ -3,7 +3,9 @@ package com.copico.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.copico.model.domain.User;
+import com.copico.model.request.PasswordResetRequest;
 import com.copico.model.request.UserUpdateInfoRequest;
+import com.copico.model.response.MailCodeResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,4 +67,7 @@ public interface IUserService extends IService<User> {
      */
     boolean updateUserInfo(Long userId, UserUpdateInfoRequest userUpdateInfoRequest);
 
+    MailCodeResponse generateMailCode(String mail, String type);
+
+    void resetPasswordByEmail(PasswordResetRequest params);
 }

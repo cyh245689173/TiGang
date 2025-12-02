@@ -1,30 +1,41 @@
 package com.copico.service.impl;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.copico.common.base.ErrorCode;
 import com.copico.common.exception.BizException;
 import com.copico.common.util.JwtUtil;
 import com.copico.common.util.ThreadLocalUtil;
+import com.copico.config.EmailConfig;
 import com.copico.mapper.UserMapper;
 import com.copico.model.domain.User;
 import com.copico.model.enums.UserRankEnum;
+import com.copico.model.request.PasswordResetRequest;
 import com.copico.model.request.UserUpdateInfoRequest;
+import com.copico.model.response.MailCodeResponse;
 import com.copico.service.IUserService;
+import com.copico.service.email.EmailService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,10 +52,13 @@ import static com.copico.common.base.UserConstant.USER_LOGIN_STATE;
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
+    private final EmailService emailService;
+    private final EmailConfig emailConfig;
+    private final RedisTemplate<String, String> redisTemplate;
 
 
     @Value("${file.upload-dir}")
@@ -248,6 +262,69 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             user.setUserProfile(userUpdateInfoRequest.getUserProfile());
         }
         return this.updateById(user);
+    }
+
+    @Override
+    public MailCodeResponse generateMailCode(String email, String type) {
+        User user = userMapper.selectOne(Wrappers.lambdaQuery(User.class).eq(User::getEmail, email));
+        if ("REGISTER".equalsIgnoreCase(type)) {
+            // 如果已经注册的邮箱不发验证码
+            if (user != null) {
+                throw new BizException("该用户已注册");
+            }
+        } else {
+            if (user == null) {
+                throw new BizException("该邮箱未被注册");
+            }
+        }
+
+        // 生成验证码
+        String code = emailService.generateComplexCode(emailConfig.getCodeCount());
+        // 验证码唯一 ID, 重置密码时用于验证有效性
+        String captchaId = UUID.randomUUID().toString();
+        // 存入 Redis
+        redisTemplate.opsForValue().set(
+                email + emailConfig.getKeyHead() + captchaId,
+                code,
+                Duration.ofSeconds(emailConfig.getExpireSeconds())
+        );
+        emailService.sendVerifyCode(email, code);
+        // 返回 Code ID
+        return new MailCodeResponse(captchaId);
+    }
+
+    @Override
+    public void resetPasswordByEmail(PasswordResetRequest params) {
+
+        if (!Objects.equals(params.getPassword(), params.getConfirmPassword())) {
+            throw new BizException("确认密码与设置的密码不一致");
+        }
+
+        String email = params.getEmail();
+        String captchaId = email + emailConfig.getKeyHead() + params.getCaptchaId();
+
+        String rdsCode = redisTemplate.opsForValue().get(captchaId);
+        String code = params.getCode();
+
+        // 校验验证码
+        if (rdsCode == null || !rdsCode.equalsIgnoreCase(code)) {
+            throw new BizException("验证码错误");
+        }
+
+        User user = userMapper.selectOne(Wrappers.lambdaQuery(User.class).eq(User::getEmail, email));
+        if (user == null) {
+            throw new BizException("用户不存在");
+        }
+
+        String newPassword = getEncryptPassword(params.getPassword());
+        userMapper.update(null, Wrappers.lambdaUpdate(User.class)
+                .set(User::getUserPassword, newPassword)
+                .eq(User::getId, user.getId())
+        );
+
+        // 清除当前 TOKEN
+        redisTemplate.delete(user.getId() + "");
+        redisTemplate.delete(captchaId);
     }
 
     /**

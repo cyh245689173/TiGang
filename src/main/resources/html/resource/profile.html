@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <title>提肛小助手 - 个人中心</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e6f2ff, #cce0ff);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #2c3e50;
+      position: relative; /* 为定位按钮做准备 */
+    }
+
+    /* 新增返回训练按钮样式 */
+    .back-to-training-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(to right, #4a89dc, #7fb3ff);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(74, 137, 220, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-to-training-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(74, 137, 220, 0.4);
+    }
+
+    .profile-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 25px;
+      box-shadow: 0 15px 35px rgba(70, 130, 180, 0.2);
+      width: 100%;
+      max-width: 800px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .profile-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .profile-header h1 {
+      color: #4682b4;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .avatar {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #7fb3ff, #4a89dc);
+      margin: 0 auto 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 15px rgba(74, 137, 220, 0.3);
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .avatar img:hover {
+      transform: scale(1.05);
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .info-item {
+      background: #f0f7ff;
+      padding: 20px;
+      border-radius: 15px;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .info-item:hover {
+      box-shadow: 0 4px 10px rgba(74, 137, 220, 0.2);
+    }
+
+    .info-item label {
+      display: block;
+      color: #5a7a9c;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .info-item span {
+      color: #4682b4;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(to right, #4a89dc, #7fb3ff);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(74, 137, 220, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(74, 137, 220, 0.4);
+    }
+
+    /* 弹窗样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+      background: #fff;
+      margin: 15% auto;
+      padding: 30px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+      color: #4682b4;
+    }
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .modal-body label {
+      color: #5a7a9c;
+      font-size: 1rem;
+      margin-bottom: 5px;
+    }
+
+    .modal-body input,
+    .modal-body textarea {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .modal-btn {
+      padding: 10px 25px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .modal-btn.confirm {
+      background: #4a89dc;
+      color: white;
+    }
+
+    .modal-btn.cancel {
+      background: #eee;
+      color: #333;
+    }
+
+    .modal-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .view-only-info {
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+      color: #4682b4;
+      font-weight: bold;
+    }
+
+    .gender-select {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 添加返回训练按钮 -->
+  <button class="back-to-training-btn" onclick="goToTigangPage()">
+    <i class="fas fa-arrow-left"></i> 返回训练
+  </button>
+
+  <div class="profile-container">
+    <div class="profile-header">
+      <h1>个人中心</h1>
+      <div class="avatar" id="avatar">
+        <img src="" alt="用户头像">
+      </div>
+    </div>
+    <div class="user-info">
+      <div class="info-item">
+        <label>用户账号</label>
+        <span id="userAccount"></span>
+      </div>
+      <div class="info-item">
+        <label>用户名</label>
+        <span id="username"></span>
+      </div>
+      <!-- 新增性别展示 -->
+      <div class="info-item">
+        <label>性别</label>
+        <span id="userGender"></span>
+      </div>
+      <!-- 新增邮箱展示 -->
+      <div class="info-item">
+        <label>个人邮箱</label>
+        <span id="userEmail"></span>
+      </div>
+      <!-- 新增手机号展示 -->
+      <div class="info-item">
+        <label>个人手机号</label>
+        <span id="userPhone"></span>
+      </div>
+      <!-- 新增个人简介展示 -->
+      <div class="info-item">
+        <label>个人简介</label>
+        <span id="userBio"></span>
+      </div>
+      <div class="info-item">
+        <label>用户等级</label>
+        <span id="userLevel"></span>
+      </div>
+      <div class="info-item">
+        <label>用户经验值</label>
+        <span id="userExp"></span>
+      </div>
+
+
+    </div>
+    <div class="action-buttons">
+      <button class="action-btn" id="changePasswordBtn">
+        <i class="fas fa-key"></i> 修改密码
+      </button>
+      <button class="action-btn" id="editProfileBtn">
+        <i class="fas fa-user-edit"></i> 修改个人信息
+      </button>
+      <button class="action-btn" id="changeAvatarBtn">
+        <i class="fas fa-image"></i> 修改头像
+      </button>
+    </div>
+  </div>
+
+  <!-- 修改密码弹窗 -->
+  <div id="changePasswordModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>修改密码</h2>
+      </div>
+      <div class="modal-body">
+        <label for="oldPasswordInput">旧密码：</label>
+        <input type="password" id="oldPasswordInput">
+        <label for="newPasswordInput">新密码：</label>
+        <input type="password" id="newPasswordInput">
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn confirm" id="confirmChangePassword">确认</button>
+        <button class="modal-btn cancel" id="cancelChangePassword">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 修改个人信息弹窗 -->
+  <div id="editProfileModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>修改个人信息</h2>
+      </div>
+      <div class="modal-body">
+        <div class="view-only-info">
+          <span>用户账号：</span>
+          <span id="modalUserAccount"></span>
+        </div>
+        <label for="newUsernameInput">用户名：</label>
+        <input type="text" id="newUsernameInput">
+        <label for="newUserEmailInput">个人邮箱：</label>
+        <input type="email" id="newUserEmailInput">
+        <label>性别：</label>
+        <select id="newUserGender" class="gender-select">
+          <option value="">请选择</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+        </select>
+        <label for="newUserPhoneInput">个人手机号：</label>
+        <input type="tel" id="newUserPhoneInput">
+        <label for="newUserBioInput">个人简介：</label>
+        <textarea id="newUserBioInput" rows="4"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn confirm" id="confirmEditProfile">确认</button>
+        <button class="modal-btn cancel" id="cancelEditProfile">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch('/api/ti/user/profile', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('authToken')
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('获取个人信息失败');
+        }
+
+        const responseData = await response.json();
+        const data = responseData.content;
+
+        const avatarImg = document.getElementById('avatar').querySelector('img');
+        // 检查后端返回的头像 URL 是否为空
+        let avatarUrl;
+        if (data.avatarUrl) {
+          // 提取文件名
+          const fileName = data.avatarUrl.split('/').pop();
+          // 拼接通过 Nginx 访问的 URL
+          avatarUrl = `/avatars/${fileName}`;
+        } else {
+          // 使用默认头像 URL，需替换为实际默认头像路径
+          avatarUrl = '/tigang/default-avatar.png'; 
+        }
+        avatarImg.src = avatarUrl;
+        avatarImg.onerror = () => {
+          // 加载失败时也使用默认头像
+          avatarImg.src = '/tigang/default-avatar.png'; 
+        };
+        document.getElementById('userAccount').textContent = data.userAccount;
+        document.getElementById('username').textContent = data.userName;
+        // 填充性别信息
+        const genderMap = { 0: '男', 1: '女' };
+        document.getElementById('userGender').textContent = genderMap[data.gender] || '暂无性别信息';
+        // 填充邮箱信息
+        document.getElementById('userEmail').textContent = data.email || '暂无邮箱';
+        // 填充手机号信息
+        document.getElementById('userPhone').textContent = data.phone || '暂无手机号';
+        // 填充个人简介信息
+        document.getElementById('userBio').textContent = data.userProfile || '暂无个人简介';
+        document.getElementById('userLevel').textContent = data.userLevel;
+        document.getElementById('userExp').textContent = data.exp;
+        // 设置弹窗中用户账号显示
+        document.getElementById('modalUserAccount').textContent = data.userAccount;
+
+        // 修改个人信息按钮点击事件
+        const editProfileBtn = document.getElementById('editProfileBtn');
+        const editProfileModal = document.getElementById('editProfileModal');
+        const cancelEditProfile = document.getElementById('cancelEditProfile');
+        const confirmEditProfile = document.getElementById('confirmEditProfile');
+        const newUsernameInput = document.getElementById('newUsernameInput');
+        const newUserEmailInput = document.getElementById('newUserEmailInput');
+        const newUserGender = document.getElementById('newUserGender');
+        const newUserPhoneInput = document.getElementById('newUserPhoneInput');
+        const newUserBioInput = document.getElementById('newUserBioInput');
+
+        // 检查元素是否正确获取
+        console.log('editProfileBtn:', editProfileBtn);
+        console.log('editProfileModal:', editProfileModal);
+
+        if (editProfileBtn && editProfileModal) {
+          editProfileBtn.addEventListener('click', () => {
+            // 回显用户信息
+            newUsernameInput.value = data.userName || '暂无用户名';
+            newUserEmailInput.value = data.email || '暂无邮箱';
+            newUserGender.value = data.gender || '';
+            newUserPhoneInput.value = data.phone || '暂无手机号';
+            newUserBioInput.value = data.userProfile || '暂无个人简介';
+
+            // 添加提示样式
+            [newUsernameInput, newUserEmailInput, newUserPhoneInput, newUserBioInput].forEach(input => {
+              if (input.value.startsWith('暂无')) {
+                input.classList.add('placeholder-text');
+              } else {
+                input.classList.remove('placeholder-text');
+              }
+            });
+
+            editProfileModal.style.display = 'block';
+            console.log('弹窗已显示');
+          });
+        }
+
+        // 输入时移除提示样式
+        [newUsernameInput, newUserEmailInput, newUserPhoneInput, newUserBioInput].forEach(input => {
+          input.addEventListener('input', () => {
+            input.classList.remove('placeholder-text');
+          });
+        });
+
+        cancelEditProfile.addEventListener('click', () => {
+          editProfileModal.style.display = 'none';
+          newUsernameInput.value = '';
+          newUserEmailInput.value = '';
+          newUserGender.value = '';
+          newUserPhoneInput.value = '';
+          newUserBioInput.value = '';
+        });
+
+        confirmEditProfile.addEventListener('click', async () => {
+          const newUsername = newUsernameInput.value;
+          const newUserEmail = newUserEmailInput.value;
+          const newUserGenderValue = newUserGender.value;
+          // 将性别转换为数字
+          let genderNumber;
+          if (newUserGenderValue === '男') {
+              genderNumber = 0;
+          } else if (newUserGenderValue === '女') {
+              genderNumber = 1;
+          } else {
+              genderNumber = null;
+          }
+          const newUserPhone = newUserPhoneInput.value;
+          const newUserBio = newUserBioInput.value;
+          if (newUsername || newUserEmail || newUserGenderValue || newUserPhone || newUserBio) {
+              await editProfile(newUsername, newUserEmail, genderNumber, newUserPhone, newUserBio);
+              editProfileModal.style.display = 'none';
+              newUsernameInput.value = '';
+              newUserEmailInput.value = '';
+              newUserGender.value = '';
+              newUserPhoneInput.value = '';
+              newUserBioInput.value = '';
+          }
+        });
+      } catch (error) {
+        console.error('获取个人信息失败:', error);
+        alert('获取个人信息失败，请稍后重试');
+      }
+
+      // 修改密码按钮点击事件
+      const changePasswordBtn = document.getElementById('changePasswordBtn');
+      const changePasswordModal = document.getElementById('changePasswordModal');
+      const cancelChangePassword = document.getElementById('cancelChangePassword');
+      const confirmChangePassword = document.getElementById('confirmChangePassword');
+      const oldPasswordInput = document.getElementById('oldPasswordInput');
+      const newPasswordInput = document.getElementById('newPasswordInput');
+
+      changePasswordBtn.addEventListener('click', () => {
+        changePasswordModal.style.display = 'block';
+      });
+
+      cancelChangePassword.addEventListener('click', () => {
+        changePasswordModal.style.display = 'none';
+        oldPasswordInput.value = '';
+        newPasswordInput.value = '';
+      });
+
+      confirmChangePassword.addEventListener('click', async () => {
+        const oldPassword = oldPasswordInput.value;
+        const newPassword = newPasswordInput.value;
+        if (oldPassword && newPassword) {
+          await changePassword(oldPassword, newPassword);
+          changePasswordModal.style.display = 'none';
+          oldPasswordInput.value = '';
+          newPasswordInput.value = '';
+        }
+      });
+
+      // 修改头像按钮点击事件
+      document.getElementById('changeAvatarBtn').addEventListener('click', () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            try {
+              await changeAvatar(file);
+              // 重新加载个人信息
+              document.dispatchEvent(new Event('DOMContentLoaded'));
+            } catch (error) {
+              console.error('修改头像失败:', error);
+              alert('修改头像失败，请稍后重试');
+            }
+          }
+        });
+        fileInput.click();
+      });
+    });
+
+    async function changePassword(oldPassword, newPassword) {
+      try {
+        const response = await fetch('/api/ti/user/changePassword', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('authToken')
+          },
+          body: JSON.stringify({ oldPassword, newPassword })
+        });
+
+        if (!response.ok) {
+          throw new Error('修改密码失败');
+        }
+
+        alert('密码修改成功');
+        // 跳转到登录页面
+        localStorage.removeItem('authToken');
+        window.location.href = '/tigang/login.html';
+      } catch (error) {
+        console.error('修改密码失败:', error);
+        alert('修改密码失败，请稍后重试');
+      }
+    }
+
+    async function editProfile(newUsername, newUserEmail, newUserGender, newUserPhone, newUserBio) {
+      try {
+        const response = await fetch('/api/ti/user/updateInfo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('authToken')
+          },
+          body: JSON.stringify({
+            userName: newUsername,
+            email: newUserEmail,
+            gender: newUserGender,
+            phone: newUserPhone,
+            userProfile: newUserBio
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('修改个人信息失败');
+        }
+
+        alert('个人信息修改成功');
+        // 重新加载个人信息
+        document.dispatchEvent(new Event('DOMContentLoaded'));
+      } catch (error) {
+        console.error('修改个人信息失败:', error);
+        alert('修改个人信息失败，请稍后重试');
+      }
+    }
+
+    async function changeAvatar(file) {
+      try {
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        const response = await fetch('/api/ti/user/changeAvatar', {
+          method: 'POST',
+          headers: {
+            // 注意：不要设置 Content-Type，让浏览器自动处理 FormData
+            'Authorization': localStorage.getItem('authToken')
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errorResponse = await response.json();
+          const errorMessage = errorResponse.message || '修改头像失败';
+          throw new Error(errorMessage);
+        }
+
+        alert('头像修改成功');
+      } catch (error) {
+        console.error('修改头像失败:', error);
+        alert(error.message);
+      }
+    }
+
+  // 实现返回训练页面的方法
+  function goToTigangPage() {
+    // 替换为实际的训练页面 URL
+    window.location.href = '/tigang/tigang.html'; 
+  }
+  </script>
+</body>
+
+</html>

@@ -12,13 +12,12 @@ import com.copico.common.util.ThreadLocalUtil;
 import com.copico.model.domain.User;
 import com.copico.model.dto.user.UserAddRequest;
 import com.copico.model.dto.user.UserUpdateRequest;
-import com.copico.model.request.UserLoginRequest;
-import com.copico.model.request.UserRegisterRequest;
-import com.copico.model.request.UserResetPasswordRequest;
-import com.copico.model.request.UserUpdateInfoRequest;
+import com.copico.model.request.*;
+import com.copico.model.response.MailCodeResponse;
 import com.copico.service.impl.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -137,6 +136,19 @@ public class UserController {
         }
         boolean result = userService.resetPassword(userId, oldPassword, newPassword);
         return RestResult.success(result);
+    }
+
+    @Operation(summary = "获取邮箱验证码")
+    @GetMapping("/sendMailCode/{mail}/{type}")
+    public RestResult<MailCodeResponse> getMailCaptcha(@Valid @PathVariable String mail, @PathVariable String type) {
+        return RestResult.success(userService.generateMailCode(mail, type));
+    }
+
+    @Operation(summary = "邮箱验证找回密码")
+    @PostMapping("/emailResetPassword")
+    public RestResult<String> passwordReset(@Valid @RequestBody PasswordResetRequest params) {
+        userService.resetPasswordByEmail(params);
+        return RestResult.success("操作成功");
     }
 
 

@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <title>提肛小助手 - 排行榜</title>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        // 弹出提示框
+        alert('请先登录');
+        // 跳转回登录页面
+        window.location.href = '/tigang/login.html';
+        //document.getElementById('unloginModal').classList.add('active');
+      }
+    });
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e6f2ff, #cce0ff);
+      min-height: 100vh;
+      padding: 20px;
+      color: #2c3e50;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 15px 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(70, 130, 180, 0.1);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(45deg, #4a89dc, #7fb3ff);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 10px rgba(74, 137, 220, 0.3);
+    }
+
+    .logo-text {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #4682b4;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+    }
+
+    .nav-btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(to right, #4a89dc, #7fb3ff);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(74, 137, 220, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(74, 137, 220, 0.4);
+    }
+
+    .nav-btn:active {
+      transform: translateY(1px);
+    }
+
+    .nav-btn.back-btn {
+      background: linear-gradient(to right, #a8c8ff, #cce0ff);
+      color: #4a6b8a;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .page-title h1 {
+      font-size: 2.8rem;
+      color: #4682b4;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-title p {
+      color: #5a7a9c;
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      gap: 20px;
+    }
+
+    .tab-btn {
+      padding: 15px 40px;
+      border: none;
+      border-radius: 15px;
+      background: linear-gradient(to bottom, #f0f7ff, #e0efff);
+      color: #4a6b8a;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(to bottom, #7fb3ff, #5a9bff);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .leaderboard {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 25px;
+      box-shadow: 0 15px 35px rgba(70, 130, 180, 0.2);
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .leaderboard-header {
+      display: grid;
+      grid-template-columns: 50px 1fr 150px 150px;
+      padding: 15px 20px;
+      background: #f0f7ff;
+      border-radius: 15px;
+      font-weight: bold;
+      color: #4682b4;
+      margin-bottom: 15px;
+    }
+
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 50px 1fr 150px 150px;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 15px;
+      background: #f8fbff;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .leaderboard-row:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 5px;
+      background: #4a89dc;
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: transform 0.3s;
+    }
+
+    .leaderboard-row:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(70, 130, 180, 0.15);
+    }
+
+    .leaderboard-row:hover:before {
+      transform: scaleY(1);
+    }
+
+    .rank {
+      font-weight: bold;
+      font-size: 1.3rem;
+      color: #4682b4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rank-1,
+    .rank-2,
+    .rank-3 {
+      position: relative;
+    }
+
+    .rank-1 .rank {
+      color: #FFD700;
+      font-size: 1.8rem;
+    }
+
+    .rank-2 .rank {
+      color: #C0C0C0;
+      font-size: 1.6rem;
+    }
+
+    .rank-3 .rank {
+      color: #CD7F32;
+      font-size: 1.4rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #7fb3ff, #4a89dc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .user-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .username {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #2c3e50;
+    }
+
+    .level {
+      font-size: 0.9rem;
+      color: #5a7a9c;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .level i {
+      color: #FFD700;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .stat-value {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #4682b4;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #5a7a9c;
+    }
+
+    .my-rank {
+      background: linear-gradient(45deg, #e1f0ff, #b5d5ff);
+      border: 2px solid #7fb3ff;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(70, 130, 180, 0.2);
+    }
+
+    .my-rank:before {
+      transform: scaleY(1);
+    }
+
+    .my-rank-label {
+      position: absolute;
+      top: -10px;
+      right: 20px;
+      background: #4a89dc;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 0 0 10px 10px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #5a7a9c;
+      font-size: 1.2rem;
+    }
+
+    .loading i {
+      font-size: 2rem;
+      margin-bottom: 15px;
+      color: #4682b4;
+      animation: spin 1.5s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: #b5d5ff;
+      margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+      font-size: 1.8rem;
+      color: #4682b4;
+      margin-bottom: 15px;
+    }
+
+    .empty-state p {
+      color: #5a7a9c;
+      max-width: 500px;
+      margin: 0 auto 30px;
+      font-size: 1.1rem;
+    }
+
+    .refresh-btn {
+      padding: 12px 35px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(to right, #4a89dc, #7fb3ff);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(74, 137, 220, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .refresh-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(74, 137, 220, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .leaderboard-header {
+        grid-template-columns: 40px 1fr 100px 100px;
+        font-size: 0.9rem;
+        padding: 10px 15px;
+      }
+
+      .leaderboard-row {
+        grid-template-columns: 40px 1fr 100px 100px;
+        padding: 15px;
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+
+      .username {
+        font-size: 1rem;
+      }
+
+      .stat-value {
+        font-size: 1rem;
+      }
+
+      .tab-btn {
+        padding: 12px 25px;
+        font-size: 1rem;
+      }
+
+      .page-title h1 {
+        font-size: 2.2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+
+      .leaderboard-header,
+      .leaderboard-row {
+        grid-template-columns: 30px 1fr 80px 80px;
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+      }
+
+      .user-info {
+        gap: 10px;
+      }
+
+      .nav-btn {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+      }
+
+      .page-title h1 {
+        font-size: 1.8rem;
+      }
+    }
+
+    .level-enum {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 0 25px 25px 0;
+      box-shadow: 0 15px 35px rgba(70, 130, 180, 0.2);
+      padding: 30px;
+      width: 300px;
+      max-width: 300px;
+      z-index: 100;
+      transition: all 0.3s ease;
+      transform: translate(-270px, -50%);
+    }
+
+    .level-enum.expanded {
+      transform: translate(0, -50%);
+    }
+
+    .level-enum-toggle {
+      position: absolute;
+      right: -40px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 0 10px 10px 0;
+      box-shadow: 5px 0 10px rgba(70, 130, 180, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: #4682b4;
+    }
+
+    .level-enum-header {
+      font-weight: bold;
+      font-size: 1.4rem;
+      color: #4682b4;
+      margin-bottom: 20px;
+    }
+
+    .level-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      background: #f8fbff;
+    }
+
+    .level-name {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .level-range {
+      color: #5a7a9c;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <i class="fas fa-dumbbell"></i>
+      </div>
+      <div class="logo-text">提肛小助手</div>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn back-btn" onclick="goToTraining()">
+        <i class="fas fa-arrow-left"></i> 返回训练
+      </button>
+      <button class="nav-btn" onclick="refreshLeaderboard()">
+        <i class="fas fa-sync-alt"></i> 刷新数据
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="page-title">
+      <h1>训练排行榜</h1>
+      <p>查看您与其他用户的训练成果，激励自己不断进步！</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="daily">今日排行</button>
+      <button class="tab-btn" data-tab="weekly">本周排行</button>
+      <button class="tab-btn" data-tab="all">总排行榜</button>
+    </div>
+
+    <div class="leaderboard">
+      <div class="leaderboard-header">
+        <div>排名</div>
+        <div>用户</div>
+        <div>训练时长</div>
+        <div>消耗卡路里</div>
+      </div>
+
+      <div id="leaderboardContent">
+        <!-- 排行榜内容将通过JavaScript动态生成 -->
+        <div class="loading">
+          <i class="fas fa-spinner"></i>
+          <p>正在加载排行榜数据...</p>
+        </div>
+      </div>
+    </div>
+    <!-- 添加等级枚举展示区域 -->
+   <div class="level-enum">
+    <div class="level-enum-toggle" onclick="toggleLevelEnum()">
+      <i class="fas fa-angle-right"></i>
+    </div>
+    <div class="level-enum-header">用户等级与经验对应表</div>
+    <div class="level-item">
+      <div class="level-name">提肛萌新</div>
+      <div class="level-range">0 - 500</div>
+    </div>
+    <div class="level-item">
+      <div class="level-name">提肛小白</div>
+      <div class="level-range">501 - 1500</div>
+    </div>
+    <div class="level-item">
+      <div class="level-name">提肛学徒</div>
+      <div class="level-range">1501 - 3000</div>
+    </div>
+    <div class="level-item">
+      <div class="level-name">提肛行者</div>
+      <div class="level-range">3001 - 5000</div>
+    </div>
+    <div class="level-item">
+      <div class="level-name">提肛能手</div>
+      <div class="level-range">5001 - 7500</div>
+    </div>
+    <div class="level-item">
+      <div class="level-name">提肛专家</div>
+      <div class="level-range">7501 - 10000</div>
+    </div>
+    <div class="level-item">
+      <div class="level-name">提肛大师</div>
+      <div class="level-range">10001 - 15000</div>
+    </div>
+    <div class="level-item">
+      <div class="level-name">提肛冠军</div>
+      <div class="level-range">15001 - 20000</div>
+    </div>
+    <div class="level-item">
+      <div class="level-name">提肛传奇</div>
+      <div class="level-range">20001 - 30000</div>
+    </div>
+    <div class="level-item">
+      <div class="level-name">提肛之神</div>
+      <div class="level-range">30001 及以上</div>
+    </div>
+  </div>
+
+  <script>
+    // 从后端获取的排行榜数据
+    async function fetchLeaderboardData(tab) {
+      let url;
+      switch (tab) {
+        case 'daily':
+          url = '/api/ti/ranking/daily';
+          break;
+        case 'weekly':
+          url = '/api/ti/ranking/weekly';
+          break;
+        case 'all':
+          url = '/api/ti/ranking/total';
+          break;
+        default:
+          url = '/api/ti/ranking/daily';
+      }
+
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('authToken')
+          },
+        });
+        if (!response.ok) {
+          throw new Error('网络响应异常');
+        }
+        const data = await response.json();
+        // 取前10名
+        return data.content.slice(0, 10);
+      } catch (error) {
+        console.error('获取排行榜数据失败:', error);
+        throw error;
+      }
+    }
+
+    // 渲染排行榜数据
+    function renderLeaderboard(data) {
+      const container = document.getElementById('leaderboardContent');
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-chart-line"></i>
+            <h3>暂无排行榜数据</h3>
+            <p>当前还没有用户完成训练，赶快开始训练成为第一名吧！</p>
+            <button class="refresh-btn" onclick="refreshLeaderboard()">
+              <i class="fas fa-sync-alt"></i> 刷新数据
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      data.forEach(user => {
+        const rankClass = user.rank <= 3 ? `rank-${user.rank}` : '';
+        // 假设当前用户排名第5，实际使用时需要动态判断  
+        const currentUserClass = user.rank === 100 ? 'my-rank' : '';
+
+
+        // 处理头像
+        let avatarUrl;
+        if (user.avatarUrl) {
+          const fileName = user.avatarUrl.split('/').pop();
+          avatarUrl = `/avatars/${fileName}`;
+        } else {
+          avatarUrl = '/tigang/default-avatar.png';
+        }
+
+        // 处理等级
+        const userLevel = user.userLevel || '暂无等级信息';
+        // 获取经验值
+        const userExp = user.exp || 0;
+
+        html += `
+          <div class="leaderboard-row ${rankClass} ${currentUserClass}">
+            ${currentUserClass ? '<div class="my-rank-label">我的排名</div>' : ''}
+            <div class="rank">${user.rank}</div>
+            <div class="user-info">
+              <div class="user-avatar">
+                <img src="${avatarUrl}" alt="用户头像" style="width: 100%; height: 100%; border-radius: 50%;" onerror="this.src='/tigang/default-avatar.png'">
+              </div>
+              <div class="user-details">
+                <div class="username">${user.username}</div>
+                <div class="level">
+                  <i class="fas fa-star"></i>
+                  ${userLevel} (经验值: ${userExp})
+                </div>
+              </div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${formatTime(user.totalDuration)}</div>
+              <div class="stat-label">累计训练</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${user.totalCalorie} kcal</div>
+              <div class="stat-label">消耗热量</div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // 格式化时间（分钟转换为小时+分钟）
+    function formatTime(minutes) {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return hours > 0 ? `${hours}小时${mins}分钟` : `${minutes}分钟`;
+    }
+
+    // 加载排行榜数据
+    async function loadLeaderboard(tab = 'daily') {
+      const container = document.getElementById('leaderboardContent');
+      container.innerHTML = `
+        <div class="loading">
+          <i class="fas fa-spinner"></i>
+          <p>正在加载排行榜数据...</p>
+        </div>
+      `;
+
+      try {
+        const data = await fetchLeaderboardData(tab);
+        renderLeaderboard(data);
+      } catch (error) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>数据加载失败</h3>
+            <p>无法从服务器获取排行榜数据，请检查网络连接后重试。</p>
+            <button class="refresh-btn" onclick="loadLeaderboard('${tab}')">
+              <i class="fas fa-sync-alt"></i> 重新加载
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // 刷新排行榜
+    function refreshLeaderboard() {
+      const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+      loadLeaderboard(activeTab);
+    }
+
+    // 标签切换功能
+    function setupTabs() {
+      const tabs = document.querySelectorAll('.tab-btn');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          loadLeaderboard(tab.dataset.tab);
+        });
+      });
+    }
+
+    // 返回训练页面
+    function goToTraining() {
+      window.location.href = '/tigang/tigang.html';
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLeaderboard();
+      setupTabs();
+    });
+
+    function toggleLevelEnum() {
+      const levelEnum = document.querySelector('.level-enum');
+      const toggleIcon = document.querySelector('.level-enum-toggle i');
+      levelEnum.classList.toggle('expanded');
+      if (levelEnum.classList.contains('expanded')) {
+        toggleIcon.classList.remove('fa-angle-right');
+        toggleIcon.classList.add('fa-angle-left');
+      } else {
+        toggleIcon.classList.remove('fa-angle-left');
+        toggleIcon.classList.add('fa-angle-right');
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -21,7 +21,13 @@ public class WebConig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         //登录和注册接口不拦截，和swagger相关接口...
-        registry.addInterceptor(loginInterceptor).excludePathPatterns("/user/login", "/user/register", "/swagger-ui/*", "/api-docs/swagger-config");
+        registry.addInterceptor(loginInterceptor).excludePathPatterns("/user/login",
+                "/user/register",
+                "/user/emailResetPassword",
+                "/user/sendMailCode/**",
+                "/swagger-ui/*",
+                "/test/**",
+                "/api-docs/swagger-config");
     }
 
     @Override

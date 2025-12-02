@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">     
+<title>提肛小助手 - 注册新账户</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e6f2ff, #cce0ff);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #2c3e50;
+        }
+
+        .register-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(70, 130, 180, 0.2);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .register-container::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(45deg, #a8c8ff, #d4e4ff);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .register-container::after {
+            content: "";
+            position: absolute;
+            bottom: -60px;
+            left: -60px;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #b5d5ff, #e1f0ff);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .register-header {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .register-header h1 {
+            color: #4682b4;
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .register-header h1::after {
+            content: "✨";
+            position: absolute;
+            top: -15px;
+            right: 60px;
+            font-size: 1.8rem;
+            animation: sparkle 2s infinite;
+        }
+
+        .register-subtitle {
+            color: #5a7a9c;
+            font-size: 1.1rem;
+        }
+
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .form-group {
+            position: relative;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4682b4;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7fb3ff;
+            font-size: 1.2rem;
+        }
+
+        .input-with-icon input {
+            width: 100%;
+            padding: 18px 20px 18px 60px;
+            border: 2px solid #e1e1e1;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            background: #f8fbff;
+            color: #4a6b8a;
+        }
+
+        .input-with-icon input:focus {
+            border-color: #5a9bff;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(90, 155, 255, 0.2);
+        }
+
+        .password-strength {
+            margin-top: 10px;
+            height: 8px;
+            background: #f0f7ff;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .strength-meter {
+            height: 100%;
+            width: 0%;
+            background: #7fb3ff;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .strength-text {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            color: #5a7a9c;
+            text-align: right;
+        }
+
+        .strength-weak {
+            background: #e74c3c;
+        }
+
+        .strength-medium {
+            background: #f39c12;
+        }
+
+        .strength-strong {
+            background: #2ecc71;
+        }
+
+        .register-button {
+            background: linear-gradient(to right, #4a89dc, #7fb3ff);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(74, 137, 220, 0.3);
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(74, 137, 220, 0.4);
+        }
+
+        .register-button:active {
+            transform: translateY(1px);
+        }
+
+        .register-button::after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 20px;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(25deg);
+            transition: all 0.6s;
+        }
+
+        .register-button:hover::after {
+            left: 120%;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #5a7a9c;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #b5d5ff, transparent);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        .login-link {
+            text-align: center;
+            color: #5a7a9c;
+            font-size: 1.1rem;
+        }
+
+        .login-link a {
+            color: #4682b4;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .login-link a:hover {
+            color: #2c6fd1;
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 1rem;
+            margin-top: 8px;
+            text-align: left;
+            padding-left: 10px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .success-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: none;
+            align-items: center;
+            z-index: 1000;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        .success-message i {
+            margin-right: 10px;
+            color: #2ecc71;
+            font-size: 20px;
+        }
+
+        .pelvic-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .pelvic-floor {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #7fb3ff, #4a89dc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(70, 130, 180, 0.3);
+            animation: pulse 4s infinite;
+        }
+
+        .pelvic-inner {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #5a9bff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .pelvic-core {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #4a7bc8;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes sparkle {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                top: -50px;
+                opacity: 0;
+            }
+
+            to {
+                top: 20px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 8px 20px rgba(70, 130, 180, 0.3);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 10px 25px rgba(70, 130, 180, 0.4);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 8px 20px rgba(70, 130, 180, 0.3);
+            }
+        }
+
+        .terms {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .terms input {
+            margin-top: 5px;
+            accent-color: #4682b4;
+        }
+
+        .terms label {
+            color: #5a7a9c;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .terms a {
+            color: #4682b4;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .terms a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 500px) {
+            .register-container {
+                padding: 30px 20px;
+            }
+
+            .register-header h1 {
+                font-size: 2.2rem;
+            }
+
+            .input-with-icon input {
+                padding: 15px 15px 15px 50px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-container">
+        <div class="pelvic-icon">
+            <div class="pelvic-floor">
+                <div class="pelvic-inner">
+                    <div class="pelvic-core"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="register-header">
+            <h1>创建账户</h1>
+            <div class="register-subtitle">加入提肛小助手，开启健康之旅</div>
+        </div>
+
+        <form class="register-form" id="registerForm">
+            <div class="form-group">
+                <label for="account">用户账号</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user-circle"></i>
+                    <input type="text" id="account" placeholder="设置您的账号" required>
+                </div>
+                <div id="account-error" class="error-message">账号长度应为4-20个字符</div>
+            </div>
+
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-signature"></i>
+                    <input type="text" id="username" placeholder="设置您的昵称" required>
+                </div>
+                <div id="username-error" class="error-message">用户名长度应为2-20个字符</div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">设置密码</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="设置您的登录密码" required>
+                </div>
+                <div class="password-strength">
+                    <div class="strength-meter" id="strengthMeter"></div>
+                </div>
+                <div class="strength-text" id="strengthText">密码强度：弱</div>
+                <div id="password-error" class="error-message">密码至少需要6个字符</div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">确认密码</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirmPassword" placeholder="再次输入您的密码" required>
+                </div>
+                <div id="confirm-error" class="error-message">两次输入的密码不一致</div>
+            </div>
+
+            <div class="terms">
+                <input type="checkbox" id="terms" required>
+                <label for="terms">我已阅读并同意<a href="#">服务条款</a>和<a href="#">隐私政策</a>，了解提肛小助手将如何使用我的个人信息。</label>
+            </div>
+
+            <button type="submit" class="register-button">注册账户</button>
+        </form>
+
+        <div class="divider">
+            <span>已有账户?</span>
+        </div>
+
+        <div class="login-link">
+            立即<a href="/tigang/login.html">登录您的账户</a>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">
+        <i class="fas fa-check-circle"></i>
+        <span>注册成功！正在跳转到登录页面...</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const registerForm = document.getElementById('registerForm');
+            const accountInput = document.getElementById('account');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const confirmInput = document.getElementById('confirmPassword');
+            const strengthMeter = document.getElementById('strengthMeter');
+            const strengthText = document.getElementById('strengthText');
+            const accountError = document.getElementById('account-error');
+            const usernameError = document.getElementById('username-error');
+            const passwordError = document.getElementById('password-error');
+            const confirmError = document.getElementById('confirm-error');
+            const successMessage = document.getElementById('successMessage');
+
+            // 密码强度检测
+            passwordInput.addEventListener('input', function () {
+                const password = this.value;
+                let strength = 0;
+
+                // 长度检测
+                if (password.length >= 6) strength += 1;
+                if (password.length >= 8) strength += 1;
+
+                // 字符类型检测
+                if (/[A-Z]/.test(password)) strength += 1; // 大写字母
+                if (/[a-z]/.test(password)) strength += 1; // 小写字母
+                if (/[0-9]/.test(password)) strength += 1; // 数字
+                if (/[^A-Za-z0-9]/.test(password)) strength += 1; // 特殊字符
+
+                // 更新UI
+                let strengthClass = 'strength-weak';
+                let strengthLabel = '弱';
+
+                if (strength >= 4) {
+                    strengthClass = 'strength-medium';
+                    strengthLabel = '中';
+                }
+                if (strength >= 6) {
+                    strengthClass = 'strength-strong';
+                    strengthLabel = '强';
+                }
+
+                // 计算宽度百分比
+                const width = Math.min(100, Math.max(0, (strength / 6) * 100));
+
+                strengthMeter.style.width = `${width}%`;
+                strengthMeter.className = `strength-meter ${strengthClass}`;
+                strengthText.textContent = `密码强度：${strengthLabel}`;
+                strengthText.style.color = strengthClass === 'strength-weak' ? '#e74c3c' :
+                    strengthClass === 'strength-medium' ? '#f39c12' : '#2ecc71';
+
+                // 隐藏错误消息
+                passwordError.style.display = 'none';
+            });
+
+            // 表单提交验证
+            registerForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const account = accountInput.value.trim();
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value;
+                const confirm = confirmInput.value;
+
+                // 重置错误消息
+                accountError.style.display = 'none';
+                usernameError.style.display = 'none';
+                passwordError.style.display = 'none';
+                confirmError.style.display = 'none';
+
+                let isValid = true;
+
+                // 验证账号
+                if (account.length < 4 || account.length > 20) {
+                    accountError.style.display = 'block';
+                    isValid = false;
+                }
+
+                // 验证用户名
+                if (username.length < 2 || username.length > 20) {
+                    usernameError.style.display = 'block';
+                    isValid = false;
+                }
+
+                // 验证密码
+                if (password.length < 6) {
+                    passwordError.style.display = 'block';
+                    isValid = false;
+                }
+
+                // 验证确认密码
+                if (password !== confirm) {
+                    confirmError.style.display = 'block';
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    // 真实注册请求
+                    resgister(account, username, password, confirm);
+                }
+            });
+
+            // 实时验证
+            accountInput.addEventListener('input', function () {
+                const account = this.value.trim();
+                if (account.length >= 4 && account.length <= 20) {
+                    accountError.style.display = 'none';
+                }
+            });
+
+            usernameInput.addEventListener('input', function () {
+                const username = this.value.trim();
+                if (username.length >= 2 && username.length <= 20) {
+                    usernameError.style.display = 'none';
+                }
+            });
+
+            confirmInput.addEventListener('input', function () {
+                const password = passwordInput.value;
+                const confirm = this.value;
+
+                if (password === confirm && password.length >= 6) {
+                    confirmError.style.display = 'none';
+                }
+            });
+
+            // 真实注册请求
+            async function resgister(account, username, password, checkPassword) {
+                const button = registerForm.querySelector('button');
+                const originalText = button.textContent;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 注册中...';
+                button.disabled = true;
+
+                try {
+                    const response = await fetch('/api/ti/user/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            userAccount: account,
+                            userName: username,
+                            userPassword: password,
+                            checkPassword: checkPassword
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        successMessage.style.display = 'flex';
+                        setTimeout(() => {
+                            window.location.href = '/tigang/login.html';
+                            successMessage.style.display = 'none';
+                            registerForm.reset();
+                            strengthMeter.style.width = '0%';
+                            strengthText.textContent = '密码强度：弱';
+                            strengthText.style.color = '#5a7a9c';
+                        }, 2000);
+                    } else {
+                        accountError.textContent = data.message || '注册失败';
+                        accountError.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('请求错误:', error);
+                    accountError.textContent = '网络连接异常，请重试';
+                    accountError.style.display = 'block';
+                } finally {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
